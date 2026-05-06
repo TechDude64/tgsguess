@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Is It? - Pixel Guess</title>
+    <style>
+        :root {
+            --blur-amount: 40px; /* Initial blur level */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .image-wrapper {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 1.5rem;
+            overflow: hidden;
+            border-radius: 10px;
+            border: 4px solid #333;
+        }
+
+        #target-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* The magic happens here */
+            filter: blur(var(--blur-amount));
+            transition: filter 0.5s ease;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 70%;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #message {
+            margin-top: 1rem;
+            font-weight: bold;
+            height: 1.2rem;
+        }
+
+        .stats {
+            margin-top: 10px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Who is this?</h1>
+    
+    <div class="image-wrapper">
+        <img id="target-image" src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Albert_Einstein_Head.jpg" alt="Mystery Person">
+    </div>
+
+    <input type="text" id="guess-input" placeholder="Type your guess..." autofocus>
+    <button onclick="checkGuess()">Guess</button>
+
+    <div id="message"></div>
+    <div class="stats" id="stats">Attempts remaining: 5</div>
+</div>
+
+<script>
+    const secretName = "Albert Einstein"; // The answer
+    let blurValue = 40;                  // Starting blur
+    let attempts = 5;                    // Max attempts
+    const blurStep = 10;                 // How much to unblur per wrong guess
+
+    const img = document.getElementById('target-image');
+    const input = document.getElementById('guess-input');
+    const message = document.getElementById('message');
+    const stats = document.getElementById('stats');
+
+    function checkGuess() {
+        const userGuess = input.value.trim();
+        
+        if (!userGuess) return;
+
+        // Check if correct (case-insensitive)
+        if (userGuess.toLowerCase() === secretName.toLowerCase()) {
+            winGame();
+        } else {
+            wrongGuess();
+        }
+
+        input.value = "";
+        input.focus();
+    }
+
+    function wrongGuess() {
+        attempts--;
+        blurValue = Math.max(0, blurValue - blurStep);
+        
+        // Update visual blur
+        document.documentElement.style.setProperty('--blur-amount', blurValue + 'px');
+        
+        if (attempts > 0) {
+            message.textContent = "Not quite! Look closer...";
+            message.style.color = "orange";
+            stats.textContent = `Attempts remaining: ${attempts}`;
+        } else {
+            loseGame();
+        }
+    }
+
+    function winGame() {
+        document.documentElement.style.setProperty('--blur-amount', '0px');
+        message.textContent = "Correct! It's " + secretName + "!";
+        message.style.color = "green";
+        input.disabled = true;
+    }
+
+    function loseGame() {
+        document.documentElement.style.setProperty('--blur-amount', '0px');
+        message.textContent = "Game Over! It was " + secretName;
+        message.style.color = "red";
+        stats.textContent = "No attempts left.";
+        input.disabled = true;
+    }
+
+    // Allow "Enter" key to submit
+    input.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            checkGuess();
+        }
+    });
+</script>
+
+</body>
+</html>
