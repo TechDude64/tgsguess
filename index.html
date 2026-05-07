@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Who Is It? - Pixel Guess</title>
+    <title>TGS Guess</title>
     <style>
         :root {
-            --blur-amount: 40px; /* Initial blur level */
+            --blur-amount: 40px;
         }
 
         body {
@@ -89,10 +89,10 @@
 <body>
 
 <div class="container">
-    <h1>Who is this?</h1>
+    <h1>Who is this Year 10 student</h1>
     
     <div class="image-wrapper">
-        <img id="target-image" src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Albert_Einstein_Head.jpg" alt="Mystery Person">
+        <img id="target-image" alt="Mystery Person">
     </div>
 
     <input type="text" id="guess-input" placeholder="Type your guess..." autofocus>
@@ -100,25 +100,84 @@
 
     <div id="message"></div>
     <div class="stats" id="stats">Attempts remaining: 5</div>
+    <div class="stats" id="streak-stats">Streak: 0</div>
 </div>
 
 <script>
-    const secretName = "Albert Einstein"; // The answer
-    let blurValue = 40;                  // Starting blur
-    let attempts = 5;                    // Max attempts
-    const blurStep = 10;                 // How much to unblur per wrong guess
+    // List of available images in the images/ folder
+    const imageFiles = [
+        "Adrian Semmler.jpg",
+        "Samuel Wang.jpg",
+        "Scott Jin.jpg",
+        "Sean Dong.jpg",
+        "Sebastien Clemenger.jpg",
+        "Sid Provan.jpg",
+        "Slade Fletcher.jpg",
+        "Stirling Walker.jpg",
+        "Tate McFarlane-Smith.jpg",
+        "Ted Richmond-Smith.jpg",
+        "Thomas Dent.jpg",
+        "Thomas Hartman.jpg",
+        "Thomas Lin.jpg",
+        "Thomas Raftopoulos.jpg",
+        "Tim Zheng.jpg",
+        "Toby Ludeman.jpg",
+        "Toby Stevenson.jpg",
+        "Tom Wilson.jpg",
+        "Vraj Gandhi.jpg",
+        "Will Harris.jpg",
+        "Will Luo.jpg",
+        "William Clyde.jpg",
+        "William Delzoppo.jpg",
+        "William Kenafacke.jpg",
+        "Xavier Lu.jpg",
+        "Yu-Tong Guo.jpg",
+        "Yuvin DeSilva.jpg",
+        "Ziv Zhou.jpg"
+    ];
+
+    let secretName = "";
+    let blurValue = 20;                  // Starting blur
+    let attempts = 5;                    
+    let streak = 0;                      
+    const blurStep = 4;                 // How much to unblur
 
     const img = document.getElementById('target-image');
     const input = document.getElementById('guess-input');
     const message = document.getElementById('message');
     const stats = document.getElementById('stats');
+    const streakStats = document.getElementById('streak-stats');
+
+    function loadNewImage() {
+        // Picks random image from the list
+        const randomFile = imageFiles[Math.floor(Math.random() * imageFiles.length)];
+        
+        // Gets  name from the filename 
+        const lastDotIndex = randomFile.lastIndexOf('.');
+        secretName = lastDotIndex !== -1 ? randomFile.substring(0, lastDotIndex) : randomFile; // The answer
+
+        // Reset variables
+        blurValue = 20;
+        attempts = 5;
+
+        
+        img.src = "images/" + randomFile;
+        document.documentElement.style.setProperty('--blur-amount', blurValue + 'px');
+        stats.textContent = `Attempts remaining: ${attempts}`;
+        message.textContent = "";
+        input.disabled = false;
+        input.value = "";
+        input.focus();
+    }
+
+    // Initialize first image
+    loadNewImage();
 
     function checkGuess() {
         const userGuess = input.value.trim();
         
         if (!userGuess) return;
 
-        // Check if correct (case-insensitive)
         if (userGuess.toLowerCase() === secretName.toLowerCase()) {
             winGame();
         } else {
@@ -133,7 +192,7 @@
         attempts--;
         blurValue = Math.max(0, blurValue - blurStep);
         
-        // Update visual blur
+        // Blur
         document.documentElement.style.setProperty('--blur-amount', blurValue + 'px');
         
         if (attempts > 0) {
@@ -150,6 +209,12 @@
         message.textContent = "Correct! It's " + secretName + "!";
         message.style.color = "green";
         input.disabled = true;
+        
+        // Update streak
+        streak++;
+        streakStats.textContent = `Streak: ${streak}`;
+        
+        setTimeout(loadNewImage, 2000);
     }
 
     function loseGame() {
@@ -158,9 +223,13 @@
         message.style.color = "red";
         stats.textContent = "No attempts left.";
         input.disabled = true;
+        
+        streak = 0;
+        streakStats.textContent = `Streak: ${streak}`;
+        
+        setTimeout(loadNewImage, 3000);
     }
 
-    // Allow "Enter" key to submit
     input.addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
             checkGuess();
